@@ -45,27 +45,37 @@
   </Target>
   -->
   <ItemGroup>
+    <Reference Include="Sandbox.Common">
+      <HintPath>lib\Sandbox.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Sandbox.Game">
+      <HintPath>lib\Sandbox.Game.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Core" />
-    <Reference Include="Sandbox.Common">
-      <HintPath>E:\Steam\SteamApps\common\SpaceEngineers\Bin64\Sandbox.Common.dll</HintPath>
-    </Reference>
-    <Reference Include="Sandbox.Game">
-      <HintPath>E:\Steam\SteamApps\common\SpaceEngineers\Bin64\Sandbox.Game.dll</HintPath>
-    </Reference>
     <Reference Include="VRage.Common">
-      <HintPath>E:\Steam\SteamApps\common\SpaceEngineers\Bin64\VRage.Common.dll</HintPath>
+      <HintPath>lib\VRage.Common.dll</HintPath>
     </Reference>
     <Reference Include="VRage.Library">
-      <HintPath>E:\Steam\SteamApps\common\SpaceEngineers\Bin64\VRage.Library.dll</HintPath>
+      <HintPath>lib\VRage.Library.dll</HintPath>
     </Reference>
     <Reference Include="VRage.Math">
-      <HintPath>E:\Steam\SteamApps\common\SpaceEngineers\Bin64\VRage.Math.dll</HintPath>
+      <HintPath>lib\VRage.Math.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AutoPilot.cs" />
+    <Compile Include="blub.cs" />
+    <Compile Include="Drill.cs" />
+    <Compile Include="FullAPITest.cs" />
+    <Compile Include="GPS.cs" />
     <Compile Include="IngameScript.cs" />
+    <Compile Include="InventoryList.cs" />
+    <Compile Include="InventorySpace.cs" />
     <Compile Include="MaterialCounter.cs" />
+    <Compile Include="NotAus.cs" />
+    <Compile Include="OrientationProjector.cs" />
+    <Compile Include="Test.cs" />
   </ItemGroup>
 </Project>
