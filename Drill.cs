@@ -51,14 +51,6 @@ namespace TestScript
                 if (ejectors.Count == 0)
                     ejectors.Add(blocks[0] as IMyShipConnector);
 
-                for (int i = 0; i < blocks.Count; ++i)
-                {
-                    var block = blocks[i] as IMyShipConnector;
-                    if (!block.ThrowOut)
-                        block.GetActionWithName("ThrowOut").Apply(block);
-
-                    block.GetActionWithName("OnOff_On").Apply(block);
-                }
             }
 
             GridTerminalSystem.GetBlocksOfType<IMyInventoryOwner>(blocks, FilterInventoryOwner);
@@ -93,6 +85,31 @@ namespace TestScript
                 }
             }
 
+            for (int l = 0; l < ejectors.Count; ++l)
+            {
+                var ejector = ejectors[l];
+                var connInv = ((IMyInventoryOwner)ejector).GetInventory(0);
+                var items = connInv.GetItems();
+
+                if (items.Count == 0)
+                {
+                    if (ejector.ThrowOut)
+                        ejector.GetActionWithName("ThrowOut").Apply(ejector);
+
+                    continue;
+                }
+
+
+                var item = items[0];
+                if (item.Content.TypeId == ORE && item.Content.SubtypeName.Equals("Stone") && !ejector.ThrowOut
+                    || (item.Content.TypeId != ORE || !item.Content.SubtypeName.Equals("Stone")) && ejector.ThrowOut)
+                    ejector.GetActionWithName("ThrowOut").Apply(ejector);
+
+                if (!ejector.IsWorking)
+                    ejector.GetActionWithName("OnOff_On").Apply(ejector);
+
+            }
+
             blocks = new List<IMyTerminalBlock>();
             GridTerminalSystem.GetBlocksOfType<IMyRadioAntenna>(blocks, FilterAntenna);
             GridTerminalSystem.GetBlocksOfType<IMyBeacon>(blocks, FilterAntenna);
@@ -106,31 +123,42 @@ namespace TestScript
             sb.Append(" (").Append(VRageMath.MathHelper.RoundOn2(100 * (float)(totalVolume * K) / (float)(totalMaxVolume * K))).Append("%)");
             antenna.SetCustomName(sb.ToString());
 
+
+            // stop condition
             blocks = new List<IMyTerminalBlock>();
             GridTerminalSystem.GetBlocksOfType<IMyShipDrill>(blocks);
             for (int i = 0; i < blocks.Count; ++i)
             {
                 var drillInv = (blocks[i] as IMyInventoryOwner).GetInventory(0);
-                if (drillInv.IsFull || (float)(totalVolume * K) / (float)(totalMaxVolume * K) >= .95f)
+                if (drillInv.IsFull)
                 {
-                    IMyTerminalBlock stopBlock = GridTerminalSystem.GetBlockWithName(stop);
-                    if (stopBlock == null)
-                        throw new Exception("Could not find block with name: '" + stop + "'");
-
-                    var ejectorEnum = ejectors.GetEnumerator();
-                    while (ejectorEnum.MoveNext())
-                    {
-                        var ejector = ejectorEnum.Current;
-                        if (ejector.ThrowOut)
-                            ejector.GetActionWithName("ThrowOut").Apply(ejector);
-
-                    }
-                    stopBlock.GetActionWithName("TriggerNow").Apply(stopBlock);
+                    stopDrill();
+                    break;
                 }
             }
 
+            if ((float)(totalVolume * K) / (float)(totalMaxVolume * K) >= .95f)
+                stopDrill();
+
             Debug(debug.ToString());
             debug.Clear();
+        }
+
+        private void stopDrill()
+        {
+            IMyTerminalBlock stopBlock = GridTerminalSystem.GetBlockWithName(stop);
+            if (stopBlock == null)
+                throw new Exception("Could not find block with name: '" + stop + "'");
+
+            var ejectorEnum = ejectors.GetEnumerator();
+            while (ejectorEnum.MoveNext())
+            {
+                var ejector = ejectorEnum.Current;
+                if (ejector.ThrowOut)
+                    ejector.GetActionWithName("ThrowOut").Apply(ejector);
+
+            }
+            stopBlock.GetActionWithName("TriggerNow").Apply(stopBlock);
         }
 
         private bool FilterInventoryOwner(IMyTerminalBlock arg)
