@@ -65,12 +65,22 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AutoDrill.cs" />
     <Compile Include="AutoPilot.cs" />
     <Compile Include="blub.cs" />
+    <Compile Include="Utils\GyroAction.cs" />
+    <Compile Include="Utils\Gyroscopes.cs" />
+    <Compile Include="Utils\MyDefinitionId.cs" />
+    <Compile Include="Utils\ReferenceOrientedBlocks.cs" />
+    <Compile Include="Utils\Sensors.cs" />
+    <Compile Include="Utils\Ship.cs" />
+    <Compile Include="Utils\Thrusters.cs" />
+    <Compile Include="Utils\XUtils.cs" />
     <Compile Include="Drill.cs" />
     <Compile Include="FullAPITest.cs" />
     <Compile Include="GPS.cs" />
     <Compile Include="IngameScript.cs" />
+    <Compile Include="ConvoyerSystem.cs" />
     <Compile Include="InventoryList.cs" />
     <Compile Include="InventorySpace.cs" />
     <Compile Include="MaterialCounter.cs" />
