@@ -8,7 +8,14 @@ namespace SE_Script_Library.Utils
 {
     public class GyroAction
     {
-        private static Dictionary<GyroAction, string> elements = new Dictionary<GyroAction, string>();
+        private static HashSet<GyroAction> elements = new HashSet<GyroAction>();
+
+        public static GyroAction Pitch = new GyroAction("Pitch", true);
+        public static GyroAction Yaw = new GyroAction("Yaw");
+        public static GyroAction Roll = new GyroAction("Roll");
+        public static GyroAction PitchRev = new GyroAction("Pitch");
+        public static GyroAction YawRev = new GyroAction("Yaw", true);
+        public static GyroAction RollRev = new GyroAction("Roll", true);
 
         private static Dictionary<VRageMath.Vector3, GyroAction> gyroActions = new Dictionary<VRageMath.Vector3, GyroAction>()
             {
@@ -20,31 +27,26 @@ namespace SE_Script_Library.Utils
                 {XUtils.Identity.Forward, GyroAction.RollRev}
             };
 
-        public static GyroAction Pitch = new GyroAction("Pitch", true);
-        public static GyroAction Yaw = new GyroAction("Yaw");
-        public static GyroAction Roll = new GyroAction("Roll");
-        public static GyroAction PitchRev = new GyroAction("Pitch");
-        public static GyroAction YawRev = new GyroAction("Yaw", true);
-        public static GyroAction RollRev = new GyroAction("Roll", true);
-
-        public string Name { get { return elements[this]; } }
+        private string name;
+        public string Name { get { return name; } }
         private bool reversed;
         public bool Reversed { get { return reversed; } }
 
         private GyroAction(string name, bool reversed = false)
         {
             this.reversed = reversed;
-            elements.Add(this, name);
+            this.name = name;
+            elements.Add(this);
         }
 
         public override string ToString()
         {
-            return elements[this];
+            return name;
         }
 
-        public List<GyroAction> GetElements()
+        public static HashSet<GyroAction> GetElements()
         {
-            return new List<GyroAction>(elements.Keys);
+            return elements;
         }
 
         public static GyroAction getActionAroundAxis(VRageMath.Vector3 axis)

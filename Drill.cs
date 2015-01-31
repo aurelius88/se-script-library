@@ -32,7 +32,6 @@ namespace TestScript
             // initialize
             VRage.MyFixedPoint totalVolume = 0;
             VRage.MyFixedPoint totalMaxVolume = 0;
-            VR
 
             var blocks = new List<IMyTerminalBlock>();
 

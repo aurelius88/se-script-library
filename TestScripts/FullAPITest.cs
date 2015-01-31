@@ -434,7 +434,6 @@ namespace TestScript
             bool DetectFriendly = block.DetectFriendly;
             bool DetectNeutral = block.DetectNeutral;
             bool DetectEnemy = block.DetectEnemy;
-
             //IMyEntity LastDetectedEntity = block.LastDetectedEntity;
             return true;
         }
