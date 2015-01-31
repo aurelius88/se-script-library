@@ -67,15 +67,21 @@
   <ItemGroup>
     <Compile Include="AutoPilot.cs" />
     <Compile Include="blub.cs" />
+    <Compile Include="CustomConveyorSystem.cs" />
     <Compile Include="Drill.cs" />
     <Compile Include="FullAPITest.cs" />
     <Compile Include="GPS.cs" />
     <Compile Include="IngameScript.cs" />
     <Compile Include="InventoryList.cs" />
     <Compile Include="InventorySpace.cs" />
+    <Compile Include="ItemTypes.cs" />
     <Compile Include="MaterialCounter.cs" />
     <Compile Include="NotAus.cs" />
     <Compile Include="OrientationProjector.cs" />
     <Compile Include="Test.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Scripts\" />
+    <Folder Include="Utils\" />
   </ItemGroup>
 </Project>

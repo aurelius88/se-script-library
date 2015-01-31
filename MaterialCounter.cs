@@ -140,11 +140,19 @@ namespace IngameProg
                 //                debug.Append(b.BlockDefinition).Append(" + ").Append(b.NumberInGrid).AppendLine();
                 if (countMap.ContainsKey(blocks[i].DefinitionDisplayNameText))
                 {
-                    countMap[blocks[i].DefinitionDisplayNameText] = countMap[blocks[i].DefinitionDisplayNameText] + 1;
+                    countMap[b.DefinitionDisplayNameText] = countMap[b.DefinitionDisplayNameText] + 1;
                 }
                 else
                 {
-                    countMap[blocks[i].DefinitionDisplayNameText] = 1;
+                    countMap[b.DefinitionDisplayNameText] = 1;
+                }
+                if (b.DefinitionDisplayNameText.Equals("Welder"))
+                {
+                    IMyShipWelder welder = b as IMyShipWelder;
+                    if (welder.CheckConnectionAllowed)
+                    {
+                        debug.Append("Connection allowed for ").Append(welder.DisplayNameText);
+                    }
                 }
                 for (int j = 0; j < invOwner.InventoryCount; ++j)
                 {
@@ -154,7 +162,9 @@ namespace IngameProg
                     {
                         var item = items[k];
                         var key = new MyDefinitionId(item.Content.TypeId, item.Content.SubtypeName);
-                        //contents.Add(key); 
+                        //contents.Add(key);
+                        if (key.TypeId != typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_Component))
+                            continue;
                         if (!inventory.ContainsKey(key))
                             inventory[key] = item.Amount;
                         else
@@ -172,13 +182,11 @@ namespace IngameProg
                 debug.Append(key).Append(" = ").Append(countMap[key]).AppendLine();
                 sum += countMap[key];
             }
-            debug.Append("Gesamt = ").Append(sum).AppendLine();
             var enumerator = inventory.Keys.GetEnumerator();
             while (enumerator.MoveNext())
             {
-                var key = enumerator.Current;
-                if (key.TypeId != typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_Ingot))
-                    continue;
+                MyDefinitionId key = enumerator.Current;
+                
                 debug.Append(typeNames[key.TypeId]).Append(key.SubtypeName).Append(" = ").Append(inventory[key]).AppendLine();
             }
 
