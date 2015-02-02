@@ -12,10 +12,10 @@ using System.Text;
 using VRage;
 
 
-namespace TestScript
+namespace SE_Script_Library.TestScripts
 {
 
-    public class Blub : IngameScript
+    public class TextPanelTest : IngameScript
     {
 
         public static StringBuilder debug = new StringBuilder();

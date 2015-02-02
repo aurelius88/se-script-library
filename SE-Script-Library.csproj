@@ -65,20 +65,23 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AutoDrill.cs" />
+    <Compile Include="Constructions\Drill.cs" />
+    <Compile Include="Scripts\AutoDrill.cs" />
     <Compile Include="AutoPilot.cs" />
-    <Compile Include="blub.cs" />
+    <Compile Include="TestScripts\SensorTest.cs" />
+    <Compile Include="TestScripts\TextPanelTest.cs" />
     <Compile Include="CustomConveyorSystem.cs" />
     <Compile Include="Utils\GyroAction.cs" />
-    <Compile Include="Utils\Gyroscopes.cs" />
+    <Compile Include="Reference\Gyroscopes.cs" />
     <Compile Include="Utils\MyDefinitionId.cs" />
-    <Compile Include="Utils\ReferenceOrientedBlocks.cs" />
-    <Compile Include="Utils\Sensors.cs" />
-    <Compile Include="Utils\Ship.cs" />
-    <Compile Include="Utils\Thrusters.cs" />
+    <Compile Include="Reference\ReferenceOrientedBlocks.cs" />
+    <Compile Include="Reference\ReferenceOrientedFactory.cs" />
+    <Compile Include="Reference\Sensors.cs" />
+    <Compile Include="Constructions\Ship.cs" />
+    <Compile Include="Reference\Thrusters.cs" />
     <Compile Include="Utils\XUtils.cs" />
     <Compile Include="Drill.cs" />
-    <Compile Include="FullAPITest.cs" />
+    <Compile Include="TestScripts\FullAPITest.cs" />
     <Compile Include="GPS.cs" />
     <Compile Include="IngameScript.cs" />
     <Compile Include="ConvoyerSystem.cs" />
@@ -90,4 +93,5 @@
     <Compile Include="OrientationProjector.cs" />
     <Compile Include="Test.cs" />
   </ItemGroup>
+  <ItemGroup />
 </Project>

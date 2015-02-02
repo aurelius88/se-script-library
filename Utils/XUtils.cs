@@ -17,9 +17,10 @@ using VRage;
 
 namespace SE_Script_Library.Utils
 {
-    class XUtils
+    public class XUtils
     {
         public static VRageMath.Matrix Identity = new VRageMath.Matrix(1, 0, 0, 0, 1, 0, 0, 0, 1);
+        public static VRageMath.Vector3 One = new VRageMath.Vector3(1);
 
         public static List<VRageMath.Vector3> Directions = new List<VRageMath.Vector3>() {
                 Identity.Right,
@@ -41,7 +42,7 @@ namespace SE_Script_Library.Utils
         /// </summary>
         /// <param name="block">The given block</param>
         /// <returns></returns>
-        public static List<IMyCubeBlock> FindPerpendicularTo(IMyTerminalBlock block)
+        public static List<IMyCubeBlock> FindPerpendicularTo(IMyCubeBlock block)
         {
             if (block == null)
                 throw new Exception("The block is null.");
