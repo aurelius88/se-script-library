@@ -68,7 +68,19 @@
     <Compile Include="Constructions\Drill.cs" />
     <Compile Include="Scripts\AutoDrill.cs" />
     <Compile Include="AutoPilot.cs" />
+    <Compile Include="Scripts\VisitorTracker.cs" />
+    <Compile Include="TestScripts\Constructions\DrillTest.cs" />
+    <Compile Include="TestScripts\Constructions\ShipTest.cs" />
+    <Compile Include="TestScripts\EventTest.cs" />
+    <Compile Include="TestScripts\GridTest.cs" />
+    <Compile Include="TestScripts\GyroTest.cs" />
+    <Compile Include="TestScripts\ThrusterTest.cs" />
+    <Compile Include="TestScripts\Utils\GyroActionTest.cs" />
+    <Compile Include="TestScripts\Reference\GyroscopesTest.cs" />
+    <Compile Include="TestScripts\Reference\SensorsTest.cs" />
+    <Compile Include="TestScripts\Reference\ThrustersTest.cs" />
     <Compile Include="TestScripts\SensorTest.cs" />
+    <Compile Include="TestScripts\ShowBlocks.cs" />
     <Compile Include="TestScripts\TextPanelTest.cs" />
     <Compile Include="CustomConveyorSystem.cs" />
     <Compile Include="Utils\GyroAction.cs" />
@@ -93,5 +105,4 @@
     <Compile Include="OrientationProjector.cs" />
     <Compile Include="Test.cs" />
   </ItemGroup>
-  <ItemGroup />
 </Project>

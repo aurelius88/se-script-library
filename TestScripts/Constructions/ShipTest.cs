@@ -14,15 +14,16 @@ using Sandbox.ModAPI.Ingame;
 using Sandbox.ModAPI.Interfaces;
 using SE_Script_Library.Utils;
 using SE_Script_Library.Reference;
+using SE_Script_Library.Constructions;
 
-namespace SE_Script_Library.TestScripts.Reference
+namespace SE_Script_Library.TestScripts.Constructions
 {
-    class SensorsTest : IngameScript
+    class ShipTest : IngameScript
     {
         public static StringBuilder debug = new StringBuilder();
         string debugName = "Debug";
 
-        IMyTerminalBlock controller;
+        IMyShipController controller;
 
         void Main()
         {
@@ -32,40 +33,21 @@ namespace SE_Script_Library.TestScripts.Reference
                 throw new Exception("No ship controller (cockpit, etc.) available.");
 
             controller = blocks[0] as IMyShipController;
+            Ship ship = new Ship(controller);
+
+            blocks = new List<IMyTerminalBlock>();
+            GridTerminalSystem.GetBlocksOfType<IMyGyro>(blocks);
+            ship.AddGyroskopes(blocks);
+
+            blocks = new List<IMyTerminalBlock>();
+            GridTerminalSystem.GetBlocksOfType<IMyThrust>(blocks);
+            ship.AddThrusters(blocks);
+
             blocks = new List<IMyTerminalBlock>();
             GridTerminalSystem.GetBlocksOfType<IMySensorBlock>(blocks);
+            ship.AddSensors(blocks);
 
-            Sensors sensors = new Sensors(controller, blocks);
-
-            debug.Append(sensors.Min).AppendLine();
-            debug.Append(sensors.Max).AppendLine();
-            debug.Append(sensors.Default).AppendLine();
-
-            for (int i = 0; i < blocks.Count; ++i)
-            {
-                var block = blocks[i];
-                int id = sensors.GetClosestSensor(block.Position);
-                if (block != sensors[id])
-                    throw new Exception("Didn't get the same sensor");
-            }
-
-            sensors.ExtendBack(0, sensors.Default);
-            sensors.ExtendFront(0, sensors.Default);
-            sensors.ExtendTop(0, sensors.Default);
-            sensors.ExtendBottom(0, sensors.Default);
-            sensors.ExtendRight(0, sensors.Default);
-            sensors.ExtendLeft(0, sensors.Default);
-
-            sensors.ExtendBack(0, sensors.Max);
-            sensors.ExtendFront(0, sensors.Max);
-            sensors.ExtendTop(0, sensors.Max);
-            sensors.ExtendBottom(0, sensors.Max);
-            sensors.ExtendRight(0, sensors.Max);
-            sensors.ExtendLeft(0, sensors.Max);
-
-            Sensors.SetFlags(sensors[0], Sensors.Action.DetectAsteroids.Value | Sensors.Action.DetectOwner.Value);
-
-            sensors.GetClosestSensor(XUtils.One);
+            debug.Append(ship.GetBounds()).AppendLine();
 
             Debug(debug.ToString());
             debug.Clear();

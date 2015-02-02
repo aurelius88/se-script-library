@@ -137,8 +137,8 @@ namespace TestScript
 
         public class Utils
         {
-            internal static VRageMath.Matrix Identity = new VRageMath.Matrix(1, 0, 0, 0, 1, 0, 0, 0, 1);
-            internal static List<VRageMath.Vector3> directions = new List<VRageMath.Vector3>() {
+            public static VRageMath.Matrix Identity = new VRageMath.Matrix(1, 0, 0, 0, 1, 0, 0, 0, 1);
+            public static List<VRageMath.Vector3> directions = new List<VRageMath.Vector3>() {
                 Identity.Right,
                 Identity.Up,
                 Identity.Backward,
@@ -156,19 +156,19 @@ namespace TestScript
             "Control Station"
         };
 
-            internal static VRageMath.Matrix CreateSkewSymmetricMatrix(VRageMath.Vector3 v)
+            public static VRageMath.Matrix CreateSkewSymmetricMatrix(VRageMath.Vector3 v)
             {
                 return new VRageMath.Matrix(0, -v.GetDim(2), v.GetDim(1), v.GetDim(2), 0, -v.GetDim(0), -v.GetDim(1), v.GetDim(0), 0);
             }
 
-            internal static VRageMath.Matrix CalculateRotation(ref VRageMath.Vector3 a, ref VRageMath.Vector3 b)
+            public static VRageMath.Matrix CalculateRotation(ref VRageMath.Vector3 a, ref VRageMath.Vector3 b)
             {
                 VRageMath.Matrix rotation = new VRageMath.Matrix();
                 CalculateRotation(ref a, ref b, out rotation);
                 return rotation;
             }
 
-            internal static void CalculateRotation(ref VRageMath.Vector3 a, ref VRageMath.Vector3 b, out VRageMath.Matrix rotation)
+            public static void CalculateRotation(ref VRageMath.Vector3 a, ref VRageMath.Vector3 b, out VRageMath.Matrix rotation)
             {
                 if (!VRageMath.Vector3.IsUnit(ref a))
                     a.Normalize();
@@ -188,7 +188,7 @@ namespace TestScript
             /// </summary>
             /// <param name="block">The given block</param>
             /// <returns></returns>
-            internal static List<IMyCubeBlock> FindPerpendicularTo(IMyTerminalBlock block)
+            public static List<IMyCubeBlock> FindPerpendicularTo(IMyTerminalBlock block)
             {
                 if (block == null)
                     throw new Exception("The block is null.");
@@ -222,7 +222,7 @@ namespace TestScript
                 return perpBlocks;
             }
 
-            internal static VRageMath.Matrix toWorld(List<IMyTerminalBlock> blocks)
+            public static VRageMath.Matrix toWorld(List<IMyTerminalBlock> blocks)
             {
                 return toWorld(new List<IMyCubeBlock>(blocks));
             }
@@ -232,7 +232,7 @@ namespace TestScript
             /// </summary>
             /// <param name="blocks"></param>
             /// <returns></returns>
-            internal static VRageMath.Matrix toWorld(List<IMyCubeBlock> blocks)
+            public static VRageMath.Matrix toWorld(List<IMyCubeBlock> blocks)
             {
                 if (blocks == null)
                     throw new Exception("The block list is null");
