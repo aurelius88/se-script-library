@@ -19,13 +19,13 @@ namespace SE_Script_Library.Constructions
 {
     public class Ship
     {
-        protected IMyTerminalBlock referenceBlock;
+        public readonly IMyTerminalBlock referenceBlock;
 
-        protected Thrusters thrusts;
-        protected Gyroscopes gyros;
-        protected Sensors sensors;
+        public Thrusters thrusts;
+        public Gyroscopes gyros;
+        public Sensors sensors;
 
-        public Ship(ref IMyShipController controller)
+        public Ship(IMyShipController controller)
         {
             referenceBlock = controller;
         }
@@ -34,31 +34,31 @@ namespace SE_Script_Library.Constructions
         {
             if (thrusts == null)
             {
-                thrusts = new Thrusters(ref referenceBlock, blocks);
+                thrusts = new Thrusters(referenceBlock, blocks);
                 return;
             }
 
-            thrusts.Update(blocks);
+            thrusts.UpdateThrusters(blocks);
         }
 
         public void AddGyroskopes(List<IMyTerminalBlock> blocks)
         {
             if (gyros == null)
             {
-                gyros = new Gyroscopes(ref referenceBlock, blocks);
+                gyros = new Gyroscopes(referenceBlock, blocks);
             }
 
-            gyros.Update(blocks);
+            gyros.UpdateGyroscopes(blocks);
         }
 
         public void AddSensors(List<IMyTerminalBlock> blocks)
         {
             if (sensors == null)
             {
-                sensors = new Sensors(ref referenceBlock, blocks);
+                sensors = new Sensors(referenceBlock, blocks);
             }
 
-            sensors.Update(blocks);
+            sensors.UpdateSensors(blocks);
         }
 
         public VRageMath.BoundingBox GetBounds()

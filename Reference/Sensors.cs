@@ -66,6 +66,20 @@ namespace SE_Script_Library.Reference
             }
         }
 
+        private static Dictionary<VRageMath.Vector3, float> offset = new Dictionary<VRageMath.Vector3, float>() {
+            {XUtils.Identity.Backward,0f},
+            {XUtils.Identity.Forward,1f},
+            {XUtils.Identity.Up,0.5f},
+            {XUtils.Identity.Down,0.5f},
+            {XUtils.Identity.Right,0.5f},
+            {XUtils.Identity.Left,0.5f}
+        };
+
+        public static float getOffset(VRageMath.Vector3 dir)
+        {
+            return offset[dir];
+        }
+
         private static Dictionary<VRageMath.Vector3, string> extendDirections = new Dictionary<VRageMath.Vector3, string>(){
             {XUtils.Identity.Backward,"Back"},
             {XUtils.Identity.Forward,"Front"},
@@ -76,21 +90,24 @@ namespace SE_Script_Library.Reference
         };
 
         // XXX an acceleration structur like kd-tree could be used, but may not be necessary
-        List<IMySensorBlock> sensors = new List<IMySensorBlock>();
+        List<IMySensorBlock> sensorBlocks = new List<IMySensorBlock>();
+
+        public int CountSensors { get { return sensorBlocks.Count; } }
+
         public readonly float Min;
         public readonly float Max;
         public readonly float Default;
 
-        private static HashSet<int> EmptySet = new HashSet<int>();
+        private static List<int> EmptySet = new HashSet<int>();
 
         public Sensors(IMyTerminalBlock reference, List<IMyTerminalBlock> blocks)
             : base(reference)
         {
-            Update(blocks);
+            UpdateSensors(blocks);
 
-            if (sensors.Count > 0)
+            if (sensorBlocks.Count > 0)
             {
-                IMySensorBlock sensor = sensors[0];
+                IMySensorBlock sensor = sensorBlocks[0];
                 Min = sensor.GetMininum<float>("Back");
                 Max = sensor.GetMaximum<float>("Back");
                 Default = sensor.GetDefaultValue<float>("Back");
@@ -102,37 +119,46 @@ namespace SE_Script_Library.Reference
             return GetClosestSensor(point, Sensors.EmptySet);
         }
 
-        public int GetClosestSensor(VRageMath.Vector3 point, HashSet<int> exclude)
+        public int GetClosestSensor(VRageMath.Vector3 point, List<int> exclude)
         {
-            if (sensors.Count == 0)
+            if (sensorBlocks.Count == 0)
                 throw new Exception("Cannot get the closest sensor, because there exists no sensor.");
 
             int i = 0;
-            while (exclude.Contains(i)) ++i;
+            while (exclude.Contains(i) && i < CountSensors) ++i;
+            if (i == CountSensors)
+                return i;
+
             int id = i;
-            float dist2NearestBlock = (sensors[i].Position - point).LengthSquared();
-            while (i < sensors.Count)
+            float dist2NearestBlock = (sensorBlocks[i].Position - point).LengthSquared();
+            for (; i < sensorBlocks.Count; ++i)
             {
                 if (exclude.Contains(i))
                     continue;
 
-                float dist2 = (sensors[i].Position - point).LengthSquared();
+                float dist2 = (sensorBlocks[i].Position - point).LengthSquared();
                 if (dist2 < dist2NearestBlock)
                 {
                     id = i;
                     dist2NearestBlock = dist2;
                 }
-                ++i;
             }
+
             return id;
         }
 
-        private void Extend(VRageMath.Vector3 dir, int id, float value)
+        public void Extend(VRageMath.Vector3 dir, int id, float value)
         {
-            if (value < Min || value > Max)
-                throw new Exception("Value '" + value + "' out of range [" + Min + ", " + Max + "].");
+            if (!XUtils.Directions.Contains(dir))
+                throw new Exception("Invalid direction vector used: " + dir);
 
-            IMySensorBlock sensor = sensors[id];
+            if (id < 0 || id >= CountSensors)
+                throw new Exception("Parameter id (= " + id + ") out of range [" + 0 + ", " + CountSensors + ").");
+
+            if (value < Min || value > Max)
+                throw new Exception("Parameter value (= " + value + ") out of range [" + Min + ", " + Max + "].");
+
+            IMySensorBlock sensor = sensorBlocks[id];
             VRageMath.Matrix toSensor;
             sensor.Orientation.GetMatrix(out toSensor);
             VRageMath.Matrix.Transpose(ref toSensor, out toSensor);
@@ -179,21 +205,21 @@ namespace SE_Script_Library.Reference
         {
             get
             {
-                return sensors[i];
+                return sensorBlocks[i];
             }
         }
 
-        internal void Update(List<IMyTerminalBlock> blocks)
+        public void UpdateSensors(List<IMyTerminalBlock> blocks)
         {
-            sensors = new List<IMySensorBlock>();
+            sensorBlocks = new List<IMySensorBlock>();
             for (int i = 0; i < blocks.Count; ++i)
             {
                 IMyTerminalBlock block = blocks[i];
                 if (block is IMySensorBlock)
-                    sensors.Add(block as IMySensorBlock);
+                    sensorBlocks.Add(block as IMySensorBlock);
             }
 
-            if (sensors.Count == 0)
+            if (sensorBlocks.Count == 0)
                 throw new Exception("There is no sensor within the given block list.");
         }
 

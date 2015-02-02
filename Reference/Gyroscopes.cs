@@ -17,16 +17,18 @@ namespace SE_Script_Library.Reference
 {
     public class Gyroscopes : ReferenceOrientedBlocks
     {
-        private List<IMyGyro> gyros = new List<IMyGyro>();
+        private List<IMyGyro> gyroscopeBlocks = new List<IMyGyro>();
+
+        public int CountGyros { get { return gyroscopeBlocks.Count; } }
 
         public readonly float Min, Max, Default;
 
         public Gyroscopes(IMyTerminalBlock referenceBlock, List<IMyTerminalBlock> blocks)
             : base(referenceBlock)
         {
-            Update(blocks);
+            UpdateGyroscopes(blocks);
 
-            IMyGyro gyro = gyros[0];
+            IMyGyro gyro = gyroscopeBlocks[0];
             Min = gyro.GetMininum<float>(GyroAction.Pitch.Name);
             Max = gyro.GetMaximum<float>(GyroAction.Pitch.Name);
             Default = gyro.GetDefaultValue<float>(GyroAction.Pitch.Name);
@@ -49,9 +51,9 @@ namespace SE_Script_Library.Reference
             referenceBlock.Orientation.GetMatrix(out local);
             axis = VRageMath.Vector3.Transform(axis, local);
 
-            for (int i = 0; i < gyros.Count; ++i)
+            for (int i = 0; i < gyroscopeBlocks.Count; ++i)
             {
-                IMyGyro gyro = gyros[i] as IMyGyro;
+                IMyGyro gyro = gyroscopeBlocks[i] as IMyGyro;
                 gyro.Orientation.GetMatrix(out local);
 
                 VRageMath.Matrix toGyro = VRageMath.Matrix.Transpose(local);
@@ -62,33 +64,111 @@ namespace SE_Script_Library.Reference
             }
         }
 
-        public void Pitch(float value)
+        private float GetRotate(VRageMath.Vector3 axis)
         {
-            Rotate(XUtils.Identity.Right, value);
+            if (!XUtils.Directions.Contains(axis))
+                throw new Exception("Invalid axis vector used: " + axis);
+
+            VRageMath.Matrix local = new VRageMath.Matrix();
+            referenceBlock.Orientation.GetMatrix(out local);
+            axis = VRageMath.Vector3.Transform(axis, local);
+
+            float totalValue = 0;
+
+            for (int i = 0; i < gyroscopeBlocks.Count; ++i)
+            {
+                IMyGyro gyro = gyroscopeBlocks[i] as IMyGyro;
+                gyro.Orientation.GetMatrix(out local);
+
+                VRageMath.Matrix toGyro = VRageMath.Matrix.Transpose(local);
+                VRageMath.Vector3 transformedAxis = VRageMath.Vector3.Transform(axis, toGyro);
+
+                GyroAction action = GyroAction.getActionAroundAxis(transformedAxis);
+                float value = gyro.GetValue<float>(action.Name);
+                totalValue += action.Reversed ? -value : value;
+            }
+
+            return totalValue;
         }
 
-        public void Yaw(float value)
+        public bool Enable
         {
-            Rotate(XUtils.Identity.Up, value);
+            get
+            {
+                bool enabled = false;
+                int i = 0;
+                while (!enabled && i < CountGyros)
+                {
+                    enabled |= gyroscopeBlocks[i].Enabled;
+                    i++;
+                }
+                return enabled;
+            }
+            set
+            {
+                for (int i = 0; i < CountGyros; ++i)
+                {
+                    IMyGyro block = gyroscopeBlocks[i];
+                    if (block.Enabled ^ value)
+                        block.GetActionWithName("OnOff").Apply(block);
+                }
+            }
         }
 
-        public void Roll(float value)
+        public bool GyroOverride
         {
-            Rotate(XUtils.Identity.Backward, value);
+            get
+            {
+                bool gyroOverride = false;
+                int i = 0;
+                while (!gyroOverride && i < CountGyros)
+                {
+                    gyroOverride |= gyroscopeBlocks[i].GyroOverride;
+                    i++;
+                }
+                return gyroOverride;
+            }
+            set
+            {
+                for (int i = 0; i < CountGyros; ++i)
+                {
+                    IMyGyro block = gyroscopeBlocks[i];
+                    if (block.GyroOverride ^ value)
+                        block.GetActionWithName("Override").Apply(block);
+                }
+            }
+        }
+
+        public float Pitch
+        {
+            get { return GetRotate(XUtils.Identity.Right); }
+            set { Rotate(XUtils.Identity.Right, value); }
+        }
+
+        public float Yaw
+        {
+            get { return GetRotate(XUtils.Identity.Up); }
+            set { Rotate(XUtils.Identity.Up, value); }
+        }
+
+        public float Roll
+        {
+            get { return GetRotate(XUtils.Identity.Backward); }
+            set { Rotate(XUtils.Identity.Backward, value); }
         }
 
 
-        internal void Update(List<IMyTerminalBlock> blocks)
+        public void UpdateGyroscopes(List<IMyTerminalBlock> blocks)
         {
-            gyros = new List<IMyGyro>();
+            gyroscopeBlocks = new List<IMyGyro>();
             for (int i = 0; i < blocks.Count; ++i)
             {
                 IMyTerminalBlock block = blocks[i];
                 if (block is IMyGyro)
-                    gyros.Add(block as IMyGyro);
+                    gyroscopeBlocks.Add(block as IMyGyro);
             }
 
-            if (gyros.Count == 0)
+            if (gyroscopeBlocks.Count == 0)
                 throw new Exception("There is no gyroscope within the given block list.");
         }
     }

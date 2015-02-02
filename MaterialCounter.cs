@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using Sandbox.Common;
 using Sandbox.Common.Components;
 using Sandbox.Common.ObjectBuilders;
-using Sandbox.Common.Localization;
 using Sandbox.Common.Input;
 using Sandbox.Game;
 using Sandbox.Game.Entities;

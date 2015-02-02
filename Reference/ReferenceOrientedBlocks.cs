@@ -22,9 +22,9 @@ namespace SE_Script_Library.Reference
         /// <summary>
         /// The block to which the actions are oriented to.
         /// </summary>
-        protected internal IMyTerminalBlock referenceBlock;
+        public readonly IMyTerminalBlock referenceBlock;
 
-        internal ReferenceOrientedBlocks(IMyTerminalBlock referenceBlock)
+        public ReferenceOrientedBlocks(IMyTerminalBlock referenceBlock)
         {
             this.referenceBlock = referenceBlock;
         }
