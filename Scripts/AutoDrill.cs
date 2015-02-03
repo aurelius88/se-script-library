@@ -61,11 +61,20 @@ namespace SE_Script_Library.Scripts
 
             Output(OutputString + '\n');
             Output(drill.CurrentState + '\n', true);
+            if (DebugActive)
+            {
+                Output("Velocity = " + drill.Velocity, true);
+                Output("Elapsed time = " + drill.ElapsedTime, true);
+            }
+            int emptyStrings = 0;
             for (int i = 0; i < tokens.Length; ++i)
             {
                 string token = tokens[i].Trim().ToLower();
                 if (token.Length == 0)
+                {
+                    emptyStrings++;
                     continue;
+                }
 
                 Action<Drill.DrillEvent> action;
                 if (!EventHandler.TryGetValue(token, out action))
@@ -85,6 +94,9 @@ namespace SE_Script_Library.Scripts
                     Output("Map '" + token + "' -> '" + drillEvent + "' and use '" + action + "'\n", true);
                 action(drillEvent);
             }
+
+            if (tokens.Length - emptyStrings <= 0)
+                drill.Handle(Drill.DrillEvent.Nothing);
 
             Output(drill.CurrentState, true);
         }
@@ -121,10 +133,10 @@ namespace SE_Script_Library.Scripts
 
             EventHandler.Clear();
             EventHandler.Add(Reset, ResetDrill);
-            EventHandler.Add(Start, drill.handle);
-            EventHandler.Add(Stop, drill.handle);
-            EventHandler.Add(Found, drill.handle);
-            EventHandler.Add(Lost, drill.handle);
+            EventHandler.Add(Start, drill.Handle);
+            EventHandler.Add(Stop, drill.Handle);
+            EventHandler.Add(Found, drill.Handle);
+            EventHandler.Add(Lost, drill.Handle);
             EventHandler.Add(Debug, HandleDebug);
 
             blocks = new List<IMyTerminalBlock>();
@@ -139,7 +151,7 @@ namespace SE_Script_Library.Scripts
             blocks = new List<IMyTerminalBlock>();
             GridTerminalSystem.GetBlocksOfType<IMyShipDrill>(blocks);
             drill.AddDrills(blocks);
-            drill.handle(Drill.DrillEvent.DrillInitialized);
+            drill.Handle(Drill.DrillEvent.DrillInitialized);
         }
     }
 }

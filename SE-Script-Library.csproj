@@ -13,6 +13,7 @@
     <FileAlignment>512</FileAlignment>
     <ProductVersion>12.0.0</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
+    <NuGetPackageImportStamp>fae41e39</NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -95,7 +96,6 @@
     <Compile Include="TestScripts\FullAPITest.cs" />
     <Compile Include="GPS.cs" />
     <Compile Include="IngameScript.cs" />
-    <Compile Include="ConvoyerSystem.cs" />
     <Compile Include="InventoryList.cs" />
     <Compile Include="InventorySpace.cs" />
     <Compile Include="MaterialCounter.cs" />

@@ -29,96 +29,125 @@ namespace SE_Script_Library.Constructions
             public static DrillEvent AsteroidLost = new DrillEvent();
             public static DrillEvent ContainerFull = new DrillEvent();
 
-            private static byte count = 0;
+            private static byte _count = 0;
 
-            private byte value;
+            private byte _value;
 
             private DrillEvent()
             {
-                this.value = count++;
+                this._value = _count++;
             }
 
             public static implicit operator byte(DrillEvent e)
             {
-                return e.value;
+                return e._value;
             }
         }
 
-        private const string UninitializedState = "UninitializedState";
-        private const string StandbyState = "StandbyState";
-        private const string SearchState = "SearchState";
-        private const string DrillState = "DrillState";
-        private readonly Dictionary<string, Action<DrillEvent>> stateBehavior = new Dictionary<string, Action<DrillEvent>>();
+        private const string _uninitializedState = "UninitializedState";
+        private const string _standbyState = "StandbyState";
+        private const string _searchState = "SearchState";
+        private const string _drillState = "DrillState";
+        private readonly Dictionary<string, Action<DrillEvent>> _stateBehavior = new Dictionary<string, Action<DrillEvent>>();
 
-        private DateTime lastTime = System.DateTime.Now;
-        private VRageMath.Vector3 lastWorldPosition;
-        private const float DrillVelocity = 1; // in meter per second
+        private DateTime _lastTime = System.DateTime.Now;
+        private VRageMath.Vector3 _lastWorldPosition;
 
-        private float PitchRadians = 0;
-        private const float PitchRadiansLimit = 2 * VRageMath.MathHelper.TwoPi;
-        private float RollRadians = 0;
-        private const float RollRadiansLimit = VRageMath.MathHelper.TwoPi / 16;
-        private string state;
-        private List<IMyShipDrill> drills = null;
+        private float _pitchRadians = 0;
+        private const float _pitchRadiansLimit = 2 * VRageMath.MathHelper.TwoPi;
+        private float _rollRadians = 0;
+        private const float _rollRadiansLimit = VRageMath.MathHelper.TwoPi / 16;
+        private string _state;
 
-        private const float EpsilonOver2 = 0.1f * 0.1f;
+        private List<IMyShipDrill> _drills = null;
 
-        public string CurrentState { get { return state; } }
-        private int AstroidDetectSize = 0; // in meter
+        private readonly float _drillVelocity; // in meter per second
+        private readonly float _astroidDetectSize; // in meter
+        private readonly float _epsilon;
 
-        private List<int> sensorIds = new List<int>();
+        public string CurrentState { get { return _state; } }
 
-        public Drill(IMyShipController reference)
+        private List<int> _sensorIds = new List<int>();
+
+        public Drill(IMyShipController reference, float drillVelocity = 1.5f, float asteroidDetectSize = 1.5f, float epsilon = 0.1f)
             : base(reference)
         {
-            state = UninitializedState;
-            lastWorldPosition = reference.GetPosition();
-            stateBehavior[UninitializedState] = UpdateUninitialized;
-            stateBehavior[StandbyState] = UpdateStandby;
-            stateBehavior[SearchState] = UpdateSearch;
-            stateBehavior[DrillState] = UpdateDrill;
+            _state = _uninitializedState;
+            _lastWorldPosition = reference.GetPosition();
+            _stateBehavior[_uninitializedState] = UpdateUninitialized;
+            _stateBehavior[_standbyState] = UpdateStandby;
+            _stateBehavior[_searchState] = UpdateSearch;
+            _stateBehavior[_drillState] = UpdateDrill;
+            _drillVelocity = drillVelocity;
+            _astroidDetectSize = asteroidDetectSize;
+            _epsilon = epsilon;
         }
 
         public void AddDrills(List<IMyTerminalBlock> blocks)
         {
-            drills = new List<IMyShipDrill>();
+            _drills = new List<IMyShipDrill>();
             for (int i = 0; i < blocks.Count; ++i)
             {
                 IMyTerminalBlock block = blocks[i];
                 if (block is IMyShipDrill)
-                    drills.Add(block as IMyShipDrill);
+                    _drills.Add(block as IMyShipDrill);
             }
 
-            if (drills.Count == 0)
+            if (_drills.Count == 0)
                 throw new Exception("There is no drill within the given block list.");
         }
 
-        public void handle(DrillEvent e)
+        public void Handle(DrillEvent e)
         {
             Action<DrillEvent> action;
-            if (stateBehavior.TryGetValue(state, out action))
+            if (_stateBehavior.TryGetValue(_state, out action))
                 action(e);
 
-            lastTime = DateTime.Now;
-            lastWorldPosition = referenceBlock.GetPosition();
+            _lastTime = DateTime.Now;
+            _lastWorldPosition = ReferenceBlock.GetPosition();
+        }
+
+        public double ElapsedTime
+        {
+            get
+            {
+                return (DateTime.Now - _lastTime).TotalSeconds;
+            }
+        }
+
+        public double Velocity
+        {
+            get
+            {
+                return Math.Sqrt(VelocitySquared);
+            }
+        }
+
+        public double VelocitySquared
+        {
+            get
+            {
+                double elapsedTime = ElapsedTime;
+                return (ReferenceBlock.GetPosition() - _lastWorldPosition).LengthSquared() / (elapsedTime * elapsedTime);
+            }
         }
 
         private void UpdateDrill(DrillEvent e)
         {
             if (e == DrillEvent.AsteroidLost)
             {
-                stopDrilling();
-                startSearching();
-                state = SearchState;
+                StopDrilling();
+                StartSearching();
+                _state = _searchState;
             }
             else if (e == DrillEvent.ContainerFull || e == DrillEvent.DrillStopInvoked)
             {
-                stopDrilling();
-                state = StandbyState;
+                StopDrilling();
+                _state = _standbyState;
             }
             else
             {
-                continueDrilling();
+                ContinueDrilling();
             }
         }
 
@@ -126,18 +155,18 @@ namespace SE_Script_Library.Constructions
         {
             if (e == DrillEvent.AsteroidFound)
             {
-                stopSearching();
-                startDrilling();
-                state = DrillState;
+                StopSearching();
+                StartDrilling();
+                _state = _drillState;
             }
             else if (e == DrillEvent.DrillStopInvoked)
             {
-                stopSearching();
-                state = StandbyState;
+                StopSearching();
+                _state = _standbyState;
             }
             else
             {
-                continueSearching();
+                ContinueSearching();
             }
         }
 
@@ -145,13 +174,13 @@ namespace SE_Script_Library.Constructions
         {
             if (e == DrillEvent.DrillStartInvoked)
             {
-                startSearching();
-                state = SearchState;
+                StartSearching();
+                _state = _searchState;
             }
             else if (e == DrillEvent.DrillStopInvoked)
             {
-                stopSearching();
-                stopDrilling();
+                StopSearching();
+                StopDrilling();
             }
         }
 
@@ -159,35 +188,34 @@ namespace SE_Script_Library.Constructions
         {
             if (e == DrillEvent.DrillInitialized)
             {
-                initializeDrill();
-                state = StandbyState;
+                InitializeDrill();
+                _state = _standbyState;
             }
         }
 
-        private void continueDrilling()
+        private void ContinueDrilling()
         {
-            double elapsedTime = (lastTime - DateTime.Now).TotalSeconds;
-            float velocityOver2 = (float)((referenceBlock.GetPosition() - lastWorldPosition).LengthSquared() / elapsedTime * elapsedTime);
-            float diffVelocity = velocityOver2 - DrillVelocity * DrillVelocity;
+            float diffVelocity = (float)VelocitySquared - (_drillVelocity * _drillVelocity);
             // break if it's faster
-            if (diffVelocity > EpsilonOver2)
+            float epsilonSquared = _epsilon * _epsilon;
+            if (diffVelocity > epsilonSquared)
             {
                 thrusts.SetThrustersEnabled(XUtils.Identity.Forward, false);
                 thrusts.SetThrustersEnabled(XUtils.Identity.Backward, true);
             }
             // accelerate
-            else if (diffVelocity < -EpsilonOver2)
+            else if (diffVelocity < -epsilonSquared)
             {
                 thrusts.SetThrustersEnabled(XUtils.Identity.Forward, true);
                 thrusts.SetThrustersEnabled(XUtils.Identity.Backward, false);
             }
         }
 
-        private void stopDrilling()
+        private void StopDrilling()
         {
-            for (int i = 0; i < drills.Count; ++i)
+            for (int i = 0; i < _drills.Count; ++i)
             {
-                IMyShipDrill block = drills[i];
+                IMyShipDrill block = _drills[i];
                 block.GetActionWithName("OnOff_Off").Apply(block);
             }
 
@@ -199,31 +227,31 @@ namespace SE_Script_Library.Constructions
             }
         }
 
-        private void continueSearching()
+        private void ContinueSearching()
         {
-            double timeElapsed = (DateTime.Now - lastTime).TotalSeconds;
-            PitchRadians += (float)(gyros.Pitch * timeElapsed);
-            RollRadians += (float)(gyros.Roll * timeElapsed);
+            double timeElapsed = (DateTime.Now - _lastTime).TotalSeconds;
+            _pitchRadians += (float)(gyros.Pitch * timeElapsed);
+            _rollRadians += (float)(gyros.Roll * timeElapsed);
             // stop rolling
-            if (RollRadians > RollRadiansLimit)
+            if (_rollRadians > _rollRadiansLimit)
             {
-                RollRadians = 0;
+                _rollRadians = 0;
                 gyros.Roll = gyros.Default;
             }
 
             // start rolling
-            if (PitchRadians > PitchRadiansLimit)
+            if (_pitchRadians > _pitchRadiansLimit)
             {
-                PitchRadians = 0;
+                _pitchRadians = 0;
                 gyros.Roll = 1 * VRageMath.MathHelper.RPMToRadiansPerSecond;
             }
         }
 
-        private void startDrilling()
+        private void StartDrilling()
         {
-            for (int i = 0; i < drills.Count; ++i)
+            for (int i = 0; i < _drills.Count; ++i)
             {
-                IMyShipDrill block = drills[i];
+                IMyShipDrill block = _drills[i];
                 block.GetActionWithName("OnOff_On").Apply(block);
             }
             // accelerate forwards
@@ -233,52 +261,52 @@ namespace SE_Script_Library.Constructions
             thrusts.SetThrustersEnabled(XUtils.Identity.Backward, false);
         }
 
-        private void stopSearching()
+        private void StopSearching()
         {
             gyros.GyroOverride = false;
             gyros.Roll = gyros.Default;
             gyros.Pitch = gyros.Default;
-            RollRadians = 0;
-            PitchRadians = 0;
+            _rollRadians = 0;
+            _pitchRadians = 0;
         }
 
-        private void startSearching()
+        private void StartSearching()
         {
             gyros.Enable = true;
             gyros.GyroOverride = true;
             gyros.Pitch = 1 * VRageMath.MathHelper.RPMToRadiansPerSecond;
         }
 
-        private void initializeDrill()
+        private void InitializeDrill()
         {
-            if (drills == null)
+            if (_drills == null)
                 throw new Exception("No drills have been added!");
 
-            if (drills.Count == 0)
+            if (_drills.Count == 0)
                 throw new Exception("There are no drills on the ship!");
 
             gyros.Enable = true;
             gyros.Yaw = gyros.Default;
-            stopSearching();
-            stopDrilling();
-            setupSensors();
+            StopSearching();
+            StopDrilling();
+            SetupSensors();
         }
 
-        private void setupSensors()
+        private void SetupSensors()
         {
             if (sensors == null)
                 throw new Exception("No sensors available (sensors == null).");
 
             VRageMath.BoundingBox bb = GetBounds();
             VRageMath.Matrix fromReference = new VRageMath.Matrix();
-            referenceBlock.Orientation.GetMatrix(out fromReference);
+            ReferenceBlock.Orientation.GetMatrix(out fromReference);
             //VRageMath.Vector3 v = m.Forward.Min() < 0 ? -m.Forward * bb.Min + (XUtils.One + m.Forward) * bb.Max : (XUtils.One - m.Forward) * bb.Min + m.Forward * bb.Max;
-            sensorIds.Clear();
+            _sensorIds.Clear();
             // Asteroid search laser
-            int id = sensors.GetClosestSensor(bb.Center, sensorIds);
+            int id = sensors.GetClosestSensor(bb.Center, _sensorIds);
             if (id == sensors.CountSensors)
                 throw new Exception("Not enough sensors.");
-            sensorIds.Add(id);
+            _sensorIds.Add(id);
             var sensor = sensors[id];
             sensors.ExtendFront(id, sensors.Max);
             sensors.ExtendBack(id, sensors.Min);
@@ -292,19 +320,19 @@ namespace SE_Script_Library.Constructions
             sensor.SetCustomName(sensor.DefinitionDisplayNameText + " X Laser");
 
             // Asteroid collision detector
-            id = sensors.GetClosestSensor(bb.Center, sensorIds);
+            id = sensors.GetClosestSensor(bb.Center, _sensorIds);
             if (id == sensors.CountSensors)
                 throw new Exception("Not enough sensors.");
-            sensorIds.Add(id);
+            _sensorIds.Add(id);
             sensor = sensors[id];
-            setupDrillSensor(fromReference, id, bb);
+            SetupDrillSensor(fromReference, id, bb);
             Sensors.SetFlags(sensor, Sensors.Action.DetectAsteroids.Value);
             sensor.GetActionWithName("OnOff_On").Apply(sensors[id]);
             sensor.RequestShowOnHUD(true);
             sensor.SetCustomName(sensor.DefinitionDisplayNameText + " X Drill");
         }
 
-        private void setupDrillSensor(VRageMath.Matrix fromReference, int id, VRageMath.BoundingBox bb)
+        private void SetupDrillSensor(VRageMath.Matrix fromReference, int id, VRageMath.BoundingBox bb)
         {
             // grid size in meters per block
             float gridSize = sensors[id].CubeGrid.GridSize;
@@ -327,7 +355,7 @@ namespace SE_Script_Library.Constructions
                 float lengthToMax = (diffMax * gridDir).Max();
                 float lengthToMin = (diffMin * gridDir).Max();
                 float offset = Sensors.getOffset(VRageMath.Vector3.Transform(gridDir, toSensor));
-                float value = AstroidDetectSize + (Math.Max(lengthToMax, lengthToMin) + offset) * gridSize;
+                float value = _astroidDetectSize + (Math.Max(lengthToMax, lengthToMin) + offset) * gridSize;
                 value = Math.Max(Math.Min(value, sensors.Max), sensors.Min);
                 sensors.Extend(dir, id, value);
             }
