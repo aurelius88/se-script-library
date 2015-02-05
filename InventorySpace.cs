@@ -19,7 +19,7 @@ namespace TestScript
 
         const string debugName = "Debug";
         const string antennaName = "Working";
-        const string stop = "Cmd Disable Auto";
+        const string stop = "xIn#0";
 
         const int K = 1000;
 
@@ -47,8 +47,8 @@ namespace TestScript
             }
 
             blocks = new List<IMyTerminalBlock>();
-            GridTerminalSystem.GetBlocksOfType<IMyRadioAntenna>(blocks, FilterAntenna);
             GridTerminalSystem.GetBlocksOfType<IMyBeacon>(blocks, FilterAntenna);
+            GridTerminalSystem.GetBlocksOfType<IMyRadioAntenna>(blocks, FilterAntenna);
             if (blocks.Count == 0)
                 throw new Exception("Did not find the specified antenna");
 
@@ -61,11 +61,12 @@ namespace TestScript
 
             if (totalVolume == totalMaxVolume)
             {
-                IMyTerminalBlock stopBlock = GridTerminalSystem.GetBlockWithName(stop);
-                if (stopBlock == null)
+                IMyTerminalBlock block = GridTerminalSystem.GetBlockWithName(stop);
+                if (block == null)
                     throw new Exception("Could not find block with name: '" + stop + "'");
 
-                stopBlock.GetActionWithName("TriggerNow").Apply(stopBlock);
+                block.SetCustomName(block.CustomName + "full,");
+                block.ApplyAction("Run");
             }
 
 

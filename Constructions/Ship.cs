@@ -19,7 +19,7 @@ namespace SE_Script_Library.Constructions
 {
     public class Ship
     {
-        public readonly IMyTerminalBlock referenceBlock;
+        public readonly IMyTerminalBlock ReferenceBlock;
 
         public Thrusters thrusts;
         public Gyroscopes gyros;
@@ -27,14 +27,14 @@ namespace SE_Script_Library.Constructions
 
         public Ship(IMyShipController controller)
         {
-            referenceBlock = controller;
+            ReferenceBlock = controller;
         }
 
         public void AddThrusters(List<IMyTerminalBlock> blocks)
         {
             if (thrusts == null)
             {
-                thrusts = new Thrusters(referenceBlock, blocks);
+                thrusts = new Thrusters(ReferenceBlock, blocks);
                 return;
             }
 
@@ -45,7 +45,7 @@ namespace SE_Script_Library.Constructions
         {
             if (gyros == null)
             {
-                gyros = new Gyroscopes(referenceBlock, blocks);
+                gyros = new Gyroscopes(ReferenceBlock, blocks);
             }
 
             gyros.UpdateGyroscopes(blocks);
@@ -55,7 +55,7 @@ namespace SE_Script_Library.Constructions
         {
             if (sensors == null)
             {
-                sensors = new Sensors(referenceBlock, blocks);
+                sensors = new Sensors(ReferenceBlock, blocks);
             }
 
             sensors.UpdateSensors(blocks);
@@ -63,7 +63,7 @@ namespace SE_Script_Library.Constructions
 
         public VRageMath.BoundingBox GetBounds()
         {
-            var grid = referenceBlock.CubeGrid;
+            var grid = ReferenceBlock.CubeGrid;
             return new VRageMath.BoundingBox(grid.Min, grid.Max);
         }
     }

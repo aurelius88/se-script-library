@@ -98,7 +98,7 @@ namespace SE_Script_Library.Reference
         public readonly float Max;
         public readonly float Default;
 
-        private static List<int> EmptySet = new HashSet<int>();
+        private static List<int> EmptySet = new List<int>();
 
         public Sensors(IMyTerminalBlock reference, List<IMyTerminalBlock> blocks)
             : base(reference)

@@ -22,9 +22,9 @@ namespace IngameProg
     public class MaterialCounter : IngameScript
     {
 
-        public static StringBuilder debug = new StringBuilder();
-        string debugName = "Debug";
-        private static Dictionary<Sandbox.Common.ObjectBuilders.MyObjectBuilderType, string> typeNames = new Dictionary<Sandbox.Common.ObjectBuilders.MyObjectBuilderType, string>() { 
+        static StringBuilder _debug = new StringBuilder();
+        string _debugName = "Debug";
+        private static Dictionary<Sandbox.Common.ObjectBuilders.MyObjectBuilderType, string> _typeNames = new Dictionary<Sandbox.Common.ObjectBuilders.MyObjectBuilderType, string>() { 
             {(Sandbox.Common.ObjectBuilders.MyObjectBuilderType)typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_Ingot), "Ingot"}, 
             {(Sandbox.Common.ObjectBuilders.MyObjectBuilderType)typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_Ore), "Ore"}, 
             {(Sandbox.Common.ObjectBuilders.MyObjectBuilderType)typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_Component), "Component"}, 
@@ -126,12 +126,12 @@ namespace IngameProg
             var blocks = new List<IMyTerminalBlock>();
             GridTerminalSystem.GetBlocksOfType<IMyInventoryOwner>(blocks);
             string typeName = typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_Ingot).ToString();
-            debug.Append(typeName).AppendLine();
+            _debug.Append(typeName).AppendLine();
 
             if (blocks.Count == 0)
                 throw new Exception("Did not find any cargo container.");
 
-            debug.Append("Anzahl=").Append(blocks.Count).AppendLine();
+            _debug.Append("Anzahl=").Append(blocks.Count).AppendLine();
             for (int i = 0; i < blocks.Count; ++i)
             {
                 var invOwner = blocks[i] as IMyInventoryOwner;
@@ -139,19 +139,11 @@ namespace IngameProg
                 //                debug.Append(b.BlockDefinition).Append(" + ").Append(b.NumberInGrid).AppendLine();
                 if (countMap.ContainsKey(blocks[i].DefinitionDisplayNameText))
                 {
-                    countMap[b.DefinitionDisplayNameText] = countMap[b.DefinitionDisplayNameText] + 1;
+                    countMap[blocks[i].DefinitionDisplayNameText] = countMap[blocks[i].DefinitionDisplayNameText] + 1;
                 }
                 else
                 {
-                    countMap[b.DefinitionDisplayNameText] = 1;
-                }
-                if (b.DefinitionDisplayNameText.Equals("Welder"))
-                {
-                    IMyShipWelder welder = b as IMyShipWelder;
-                    if (welder.CheckConnectionAllowed)
-                    {
-                        debug.Append("Connection allowed for ").Append(welder.DisplayNameText);
-                    }
+                    countMap[blocks[i].DefinitionDisplayNameText] = 1;
                 }
                 for (int j = 0; j < invOwner.InventoryCount; ++j)
                 {
@@ -161,9 +153,7 @@ namespace IngameProg
                     {
                         var item = items[k];
                         var key = new MyDefinitionId(item.Content.TypeId, item.Content.SubtypeName);
-                        //contents.Add(key);
-                        if (key.TypeId != typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_Component))
-                            continue;
+                        //contents.Add(key); 
                         if (!inventory.ContainsKey(key))
                             inventory[key] = item.Amount;
                         else
@@ -172,33 +162,35 @@ namespace IngameProg
                 }
             }
 
-            debug.AppendLine();
+            _debug.AppendLine();
             var it = countMap.Keys.GetEnumerator();
             int sum = 0;
             while (it.MoveNext())
             {
                 var key = it.Current;
-                debug.Append(key).Append(" = ").Append(countMap[key]).AppendLine();
+                _debug.Append(key).Append(" = ").Append(countMap[key]).AppendLine();
                 sum += countMap[key];
             }
+            _debug.Append("Gesamt = ").Append(sum).AppendLine();
             var enumerator = inventory.Keys.GetEnumerator();
             while (enumerator.MoveNext())
             {
-                MyDefinitionId key = enumerator.Current;
-                
-                debug.Append(typeNames[key.TypeId]).Append(key.SubtypeName).Append(" = ").Append(inventory[key]).AppendLine();
+                var key = enumerator.Current;
+                if (key.TypeId != typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_Ingot))
+                    continue;
+                _debug.Append(_typeNames[key.TypeId]).Append(key.SubtypeName).Append(" = ").Append(inventory[key]).AppendLine();
             }
 
-            Debug(debug.ToString());
-            debug.Clear();
+            Debug(_debug.ToString());
+            _debug.Clear();
         }
 
         void Debug(String message)
         {
             var list = new List<IMyTerminalBlock>();
-            GridTerminalSystem.SearchBlocksOfName(debugName, list);
+            GridTerminalSystem.SearchBlocksOfName(_debugName, list);
             if (list.Count > 0)
-                list[0].SetCustomName(debugName + ":\n\r" + message);
+                list[0].SetCustomName(_debugName + ":\n\r" + message);
         }
     }
 }

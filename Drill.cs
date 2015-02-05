@@ -19,11 +19,12 @@ namespace TestScript
 
         const string debugName = "Debug";
         const string antennaName = "Working";
-        const string stop = "Cmd Disable Auto";
+        const string stop = "xIn#0";
 
         const int K = 1000;
 
-        List<IMyShipConnector> ejectors = new List<IMyShipConnector>();
+        List<IMyShipConnector> ejectors;
+        List<IMyShipDrill> drills;
 
         Sandbox.Common.ObjectBuilders.MyObjectBuilderType ORE = typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_Ore);
 
@@ -35,28 +36,64 @@ namespace TestScript
 
             var blocks = new List<IMyTerminalBlock>();
 
-            if (ejectors.Count == 0)
+            if (ejectors == null)
             {
-                GridTerminalSystem.GetBlocksOfType<IMyShipConnector>(blocks);
+                ejectors = new List<IMyShipConnector>();
+                GridTerminalSystem.GetBlocksOfType<IMyShipConnector>(blocks, FilterEjector);
+                if (ejectors.Count == 0)
+                    GridTerminalSystem.GetBlocksOfType<IMyShipConnector>(blocks);
+
                 for (int i = 0; i < blocks.Count; ++i)
                 {
-                    var block = blocks[i] as IMyShipConnector;
-
-                    if (block.DefinitionDisplayNameText != "Ejector")
-                        continue;
-
-                    ejectors.Add(block);
+                    ejectors.Add(blocks[i] as IMyShipConnector);
                 }
+            }
 
-                if (ejectors.Count == 0)
-                    ejectors.Add(blocks[0] as IMyShipConnector);
-
+            if (drills == null)
+            {
+                drills = new List<IMyShipDrill>();
+                GridTerminalSystem.GetBlocksOfType<IMyShipDrill>(blocks);
+                for (int i = 0; i < blocks.Count; ++i)
+                {
+                    drills.Add(blocks[i] as IMyShipDrill);
+                }
             }
 
             GridTerminalSystem.GetBlocksOfType<IMyInventoryOwner>(blocks, FilterInventoryOwner);
 
             if (blocks.Count == 0)
                 throw new Exception("Did not find any cargo container.");
+
+            for (int i = 0; i < ejectors.Count; ++i)
+            {
+                var invOwner = ejectors[i] as IMyInventoryOwner;
+                IMyInventory inv = invOwner.GetInventory(0);
+                var items = inv.GetItems();
+                for (int j = 0; j < items.Count; ++j)
+                {
+                    IMyInventoryItem item = items[j];
+                    if (item.Content.TypeId == ORE && item.Content.SubtypeName.Equals("Stone"))
+                        continue;
+
+                    VRage.MyFixedPoint amount = item.Amount;
+                    for (int k = 0; k < drills.Count; ++k)
+                    {
+                        var connInv = ((IMyInventoryOwner)drills[k]).GetInventory(0);
+                        VRage.MyFixedPoint available = connInv.MaxVolume - connInv.CurrentVolume;
+                        if (available < 0)
+                            continue;
+
+                        debug.Append("available = ").Append(available).AppendLine();
+                        debug.Append("amount = ").Append(item.Amount).AppendLine();
+                        VRage.MyFixedPoint transAmount = VRage.MyFixedPoint.Min(available * 3 * K, item.Amount);
+                        if(inv.TransferItemTo(connInv, j, connInv.GetItems().Count, true, transAmount))
+                            amount -= transAmount;
+
+                        if (amount <= 0)
+                            break;
+                    }
+                }
+            }
 
             for (int i = 0; i < blocks.Count; ++i)
             {
@@ -72,13 +109,16 @@ namespace TestScript
                     for (int k = 0; k < items.Count; ++k)
                     {
                         var item = items[k];
-                        if (item.Content.TypeId == ORE && item.Content.SubtypeName.Equals("Stone") && ejectors != null)
+                        if (item.Content.TypeId == ORE && item.Content.SubtypeName.Equals("Stone"))
                         {
                             for (int l = 0; l < ejectors.Count; ++l)
                             {
+                                if (!ejectors[l].Enabled)
+                                    continue;
+
                                 var connInv = ((IMyInventoryOwner)ejectors[l]).GetInventory(0);
                                 VRage.MyFixedPoint available = connInv.MaxVolume - connInv.CurrentVolume;
-                                debug.Append(inv.TransferItemTo(connInv, k, 0, amount: VRage.MyFixedPoint.Min(available, item.Amount) * 3 * K)).AppendLine();
+                                inv.TransferItemTo(connInv, k, 0, true, amount: VRage.MyFixedPoint.Min(available, item.Amount) * 3 * K);
                             }
                         }
                     }
@@ -88,9 +128,11 @@ namespace TestScript
             for (int l = 0; l < ejectors.Count; ++l)
             {
                 var ejector = ejectors[l];
+                if (!ejector.Enabled)
+                    continue;
+
                 var connInv = ((IMyInventoryOwner)ejector).GetInventory(0);
                 var items = connInv.GetItems();
-
                 if (items.Count == 0)
                 {
                     if (ejector.ThrowOut)
@@ -99,20 +141,19 @@ namespace TestScript
                     continue;
                 }
 
-
                 var item = items[0];
                 if (item.Content.TypeId == ORE && item.Content.SubtypeName.Equals("Stone") && !ejector.ThrowOut
                     || (item.Content.TypeId != ORE || !item.Content.SubtypeName.Equals("Stone")) && ejector.ThrowOut)
                     ejector.GetActionWithName("ThrowOut").Apply(ejector);
 
-                if (!ejector.IsWorking)
-                    ejector.GetActionWithName("OnOff_On").Apply(ejector);
-
             }
 
             blocks = new List<IMyTerminalBlock>();
-            GridTerminalSystem.GetBlocksOfType<IMyRadioAntenna>(blocks, FilterAntenna);
             GridTerminalSystem.GetBlocksOfType<IMyBeacon>(blocks, FilterAntenna);
+            if (blocks.Count == 0)
+            {
+                GridTerminalSystem.GetBlocksOfType<IMyRadioAntenna>(blocks, FilterAntenna);
+            }
             if (blocks.Count == 0)
                 throw new Exception("Did not find the specified antenna");
 
@@ -125,11 +166,10 @@ namespace TestScript
 
 
             // stop condition
-            blocks = new List<IMyTerminalBlock>();
-            GridTerminalSystem.GetBlocksOfType<IMyShipDrill>(blocks);
-            for (int i = 0; i < blocks.Count; ++i)
+
+            for (int i = 0; i < drills.Count; ++i)
             {
-                var drillInv = (blocks[i] as IMyInventoryOwner).GetInventory(0);
+                var drillInv = (drills[i] as IMyInventoryOwner).GetInventory(0);
                 if (drillInv.IsFull)
                 {
                     stopDrill();
@@ -137,17 +177,20 @@ namespace TestScript
                 }
             }
 
-            if ((float)(totalVolume * K) / (float)(totalMaxVolume * K) >= .95f)
-                stopDrill();
-
             Debug(debug.ToString());
             debug.Clear();
         }
 
+        private bool FilterEjector(IMyTerminalBlock arg)
+        {
+            return arg.DefinitionDisplayNameText == "Ejector";
+        }
+
         private void stopDrill()
         {
-            IMyTerminalBlock stopBlock = GridTerminalSystem.GetBlockWithName(stop);
-            if (stopBlock == null)
+            var blocks = new List<IMyTerminalBlock>();
+            GridTerminalSystem.SearchBlocksOfName(stop, blocks);
+            if (blocks.Count == 0)
                 throw new Exception("Could not find block with name: '" + stop + "'");
 
             var ejectorEnum = ejectors.GetEnumerator();
@@ -158,17 +201,20 @@ namespace TestScript
                     ejector.GetActionWithName("ThrowOut").Apply(ejector);
 
             }
-            stopBlock.GetActionWithName("TriggerNow").Apply(stopBlock);
+
+            var block = blocks[0];
+            block.SetCustomName(block.CustomName + "," + "full");
+            block.ApplyAction("Run");
         }
 
         private bool FilterInventoryOwner(IMyTerminalBlock arg)
         {
-            return arg != null && !(arg is IMyReactor) && !(arg is IMyShipConnector);
+            return !(arg is IMyReactor) && !(arg is IMyShipConnector && ((IMyShipConnector)arg).Enabled);
         }
 
         private bool FilterAntenna(IMyTerminalBlock arg)
         {
-            return arg != null && arg.CustomName.Contains(antennaName);
+            return arg.CustomName.Contains(antennaName);
         }
 
         void Debug(String message)
