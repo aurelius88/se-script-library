@@ -85,6 +85,7 @@
     <Compile Include="TestScripts\SensorTest.cs" />
     <Compile Include="TestScripts\ShowBlocks.cs" />
     <Compile Include="TestScripts\TextPanelTest.cs" />
+    <Compile Include="GlobalConstants\ItemTypes.cs" />
     <Compile Include="CustomConveyorSystem.cs" />
     <Compile Include="Utils\GyroAction.cs" />
     <Compile Include="Reference\Gyroscopes.cs" />
@@ -100,7 +101,6 @@
     <Compile Include="IngameScript.cs" />
     <Compile Include="InventoryList.cs" />
     <Compile Include="InventorySpace.cs" />
-    <Compile Include="ItemTypes.cs" />
     <Compile Include="MaterialCounter.cs" />
     <Compile Include="NotAus.cs" />
     <Compile Include="OrientationProjector.cs" />
