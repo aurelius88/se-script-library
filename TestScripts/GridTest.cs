@@ -26,19 +26,25 @@ namespace SE_Script_Library.TestScripts
             if (blocks.Count == 0)
                 throw new Exception();
 
-            HashSet<string> grids = new HashSet<string>();
+            HashSet<IMyCubeGrid> grids = new HashSet<IMyCubeGrid>();
 
             for (int i = 0; i < blocks.Count; i++)
             {
                 var block = blocks[i];
                 var grid = block.CubeGrid;
-                grids.Add(grid.ToString());
+                grids.Add(grid);
             }
 
-            HashSet<string>.Enumerator e = grids.GetEnumerator();
+            HashSet<IMyCubeGrid>.Enumerator e = grids.GetEnumerator();
             while (e.MoveNext())
             {
-                debug.Append(e.Current).AppendLine();
+                IMyCubeGrid grid = e.Current;
+                debug.Append(grid).AppendLine();
+                debug.Append("GridSize = ").Append(grid.GridSize).AppendLine();
+                debug.Append("GridSizeEnum = ").Append(grid.GridSizeEnum).AppendLine();
+                debug.Append("IsStatic = ").Append(grid.IsStatic).AppendLine();
+                debug.Append("Min = ").Append(grid.Min).AppendLine();
+                debug.Append("Max = ").Append(grid.Max).AppendLine();
             }
 
             Debug(debug.ToString());

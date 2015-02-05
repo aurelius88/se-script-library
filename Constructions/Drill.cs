@@ -54,7 +54,9 @@ namespace SE_Script_Library.Constructions
         private VRageMath.Vector3 _lastWorldPosition;
 
         private float _pitchRadians = 0;
-        private const float _pitchRadiansLimit = 2 * VRageMath.MathHelper.TwoPi;
+        public float PitchRadians { get { return _pitchRadians; } }
+        // mass / 100,000 * 2 pi
+        private const float _pitchRadiansLimit = 3.49781f * VRageMath.MathHelper.TwoPi;
         private float _rollRadians = 0;
         private const float _rollRadiansLimit = VRageMath.MathHelper.TwoPi / 16;
         private string _state;
@@ -159,7 +161,7 @@ namespace SE_Script_Library.Constructions
                 StartDrilling();
                 _state = _drillState;
             }
-            else if (e == DrillEvent.DrillStopInvoked)
+            else if (e == DrillEvent.ContainerFull || e == DrillEvent.DrillStopInvoked)
             {
                 StopSearching();
                 _state = _standbyState;
@@ -207,6 +209,11 @@ namespace SE_Script_Library.Constructions
             else if (diffVelocity < -epsilonSquared)
             {
                 thrusts.SetThrustersEnabled(XUtils.Identity.Forward, true);
+                thrusts.SetThrustersEnabled(XUtils.Identity.Backward, false);
+            }
+            else
+            {
+                thrusts.SetThrustersEnabled(XUtils.Identity.Forward, false);
                 thrusts.SetThrustersEnabled(XUtils.Identity.Backward, false);
             }
         }
@@ -259,6 +266,7 @@ namespace SE_Script_Library.Constructions
             thrusts.AccelerateForward(thrusts.MaxAcceleration / 4);
             // deactivate backward thrusters
             thrusts.SetThrustersEnabled(XUtils.Identity.Backward, false);
+            thrusts.AccelerateBackward(thrusts.MaxAcceleration / 4);
         }
 
         private void StopSearching()

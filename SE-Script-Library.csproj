@@ -67,11 +67,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constructions\Drill.cs" />
+    <Compile Include="Drill.cs" />
     <Compile Include="Scripts\AutoDrill.cs" />
     <Compile Include="AutoPilot.cs" />
     <Compile Include="Scripts\VisitorTracker.cs" />
     <Compile Include="TestScripts\Constructions\DrillTest.cs" />
     <Compile Include="TestScripts\Constructions\ShipTest.cs" />
+    <Compile Include="TestScripts\CrashTest.cs" />
     <Compile Include="TestScripts\EventTest.cs" />
     <Compile Include="TestScripts\GridTest.cs" />
     <Compile Include="TestScripts\GyroTest.cs" />
@@ -92,7 +94,6 @@
     <Compile Include="Constructions\Ship.cs" />
     <Compile Include="Reference\Thrusters.cs" />
     <Compile Include="Utils\XUtils.cs" />
-    <Compile Include="Drill.cs" />
     <Compile Include="TestScripts\FullAPITest.cs" />
     <Compile Include="GPS.cs" />
     <Compile Include="IngameScript.cs" />
