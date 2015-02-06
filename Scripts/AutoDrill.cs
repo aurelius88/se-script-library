@@ -146,18 +146,23 @@ namespace SE_Script_Library.Scripts
             EventHandler.Add(Full, drill.Handle);
 
             blocks = new List<IMyTerminalBlock>();
-            GridTerminalSystem.GetBlocksOfType<IMyGyro>(blocks);
+            GridTerminalSystem.GetBlocksOfType<IMyGyro>(blocks, SameGridLikeReferenceBlock);
             drill.AddGyroskopes(blocks);
             blocks = new List<IMyTerminalBlock>();
-            GridTerminalSystem.GetBlocksOfType<IMyThrust>(blocks);
+            GridTerminalSystem.GetBlocksOfType<IMyThrust>(blocks, SameGridLikeReferenceBlock);
             drill.AddThrusters(blocks);
             blocks = new List<IMyTerminalBlock>();
-            GridTerminalSystem.GetBlocksOfType<IMySensorBlock>(blocks);
+            GridTerminalSystem.GetBlocksOfType<IMySensorBlock>(blocks, SameGridLikeReferenceBlock);
             drill.AddSensors(blocks);
             blocks = new List<IMyTerminalBlock>();
-            GridTerminalSystem.GetBlocksOfType<IMyShipDrill>(blocks);
+            GridTerminalSystem.GetBlocksOfType<IMyShipDrill>(blocks, SameGridLikeReferenceBlock);
             drill.AddDrills(blocks);
             drill.Handle(Drill.DrillEvent.DrillInitialized);
+        }
+
+        private bool SameGridLikeReferenceBlock(IMyTerminalBlock arg)
+        {
+            return arg.CubeGrid == drill.ReferenceBlock.CubeGrid;
         }
     }
 
