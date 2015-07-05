@@ -34,8 +34,8 @@ namespace IngameProg
             // 1 arg
             public const string Get = "get";
             public const string Remove = "remove";
-            public const string OpenInner = "openinner";
-            public const string OpenOuter = "openouter";
+            public const string CloseOutside = "close";
+            public const string OpenOutside = "open";
             // 4 args
             public const string Add = "add";
         }
@@ -146,11 +146,11 @@ namespace IngameProg
                         RemoveLockRoom(args[0]);
                         TryPrintIgnoredArguments(args, 1);
                         break;
-                    case Command.OpenInner:
+                    case Command.CloseOutside:
                         OpenInnerDoor(args[0]);
                         TryPrintIgnoredArguments(args, 1);
                         break;
-                    case Command.OpenOuter:
+                    case Command.OpenOutside:
                         OpenOuterDoor(args[0]);
                         TryPrintIgnoredArguments(args, 1);
                         break;
@@ -217,14 +217,14 @@ namespace IngameProg
 
         void PrintOpenInnerUsage()
         {
-            Echo("-> Type '" + Command.OpenInner + CommandSep + "Air Vent'" +
+            Echo("-> Type '" + Command.CloseOutside + CommandSep + "Air Vent'" +
                 " to open the inner door of the Air Lock Room. Where");
             Echo("'Air Vent' is the name of the air vent inside the lock room. (used as key)");
         }
 
         void PrintOpenOuterUsage()
         {
-            Echo("-> Type '" + Command.OpenOuter + CommandSep + "Air Vent'" +
+            Echo("-> Type '" + Command.OpenOutside + CommandSep + "Air Vent'" +
                 " to open the inner door of the Air Lock Room. Where");
             Echo("'Air Vent' is the name of the air vent inside the lock room. (used as key)");
         }
@@ -308,7 +308,7 @@ namespace IngameProg
                 config.State = OuterClosingEnter;
                 _configs.Add(key, config);
                 _lastKey = key;
-                _openPosition = Command.OpenInner;
+                _openPosition = Command.CloseOutside;
                 UpdateStorage();
 
                 Echo("Added new Air Lock Room.");
@@ -363,12 +363,12 @@ namespace IngameProg
 
         void OpenInnerDoor(string key)
         {
-            OpenDoor(key, Command.OpenInner);
+            OpenDoor(key, Command.CloseOutside);
         }
 
         void OpenOuterDoor(string key)
         {
-            OpenDoor(key, Command.OpenOuter);
+            OpenDoor(key, Command.OpenOutside);
         }
 
         void OpenDoor(string key, string doorPos)
@@ -434,7 +434,7 @@ namespace IngameProg
 
         void InnerClosingEnter(string key)
         {
-            if (_openPosition.Equals(Command.OpenOuter))
+            if (_openPosition.Equals(Command.OpenOutside))
             {
                 Configuration config = _configs[key];
                 config.innerDoor.ApplyAction("OnOff_On");
@@ -573,7 +573,7 @@ namespace IngameProg
 
         void OuterClosingEnter(string key)
         {
-            if (_openPosition.Equals(Command.OpenInner))
+            if (_openPosition.Equals(Command.CloseOutside))
             {
                 Log("OuterClosingInnerOpeningEnter");
                 Configuration config = _configs[key];
