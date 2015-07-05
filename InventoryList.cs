@@ -1,12 +1,12 @@
 ﻿using Sandbox.Definitions;
 using Sandbox.Engine;
-using Sandbox.Game;
 using Sandbox.ModAPI.Ingame;
 using Sandbox.ModAPI.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using VRage;
+using VRage.Game;
 
 
 namespace TestScript
@@ -15,15 +15,34 @@ namespace TestScript
     public class InventoryList : IngameScript
     {
 
+        class ItemTypes
+        {
+            public static readonly VRage.ObjectBuilders.MyObjectBuilderType ORE = typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_Ore);
+            public static readonly VRage.ObjectBuilders.MyObjectBuilderType COMPONENT = typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_Component);
+            public static readonly VRage.ObjectBuilders.MyObjectBuilderType INGOT = typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_Ingot);
+            public static readonly VRage.ObjectBuilders.MyObjectBuilderType AMMO = typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_AmmoMagazine);
+            public static readonly VRage.ObjectBuilders.MyObjectBuilderType GUN = typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_PhysicalGunObject);
+            public static readonly VRage.ObjectBuilders.MyObjectBuilderType PHYSICAL_OBJECT = typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_PhysicalObject);
+        }
+
+
+
         public static StringBuilder debug = new StringBuilder();
         string debugName = "Debug";
+        private Dictionary<VRage.ObjectBuilders.MyObjectBuilderType, string> typeNames = new Dictionary<VRage.ObjectBuilders.MyObjectBuilderType, string>() { 
+            {ItemTypes.INGOT, "Ingot"}, 
+            {ItemTypes.ORE, "Ore"}, 
+            {ItemTypes.COMPONENT, "Component"}, 
+            {ItemTypes.PHYSICAL_OBJECT, "PhysicalGunObject"}, 
+            {ItemTypes.AMMO, "AmmoMagazine"} 
+        };
 
-        private static Dictionary<Sandbox.Common.ObjectBuilders.MyObjectBuilderType, string> typeNames = new Dictionary<Sandbox.Common.ObjectBuilders.MyObjectBuilderType, string>() {
-            {(Sandbox.Common.ObjectBuilders.MyObjectBuilderType)typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_Ingot), "Ingot"},
-            {(Sandbox.Common.ObjectBuilders.MyObjectBuilderType)typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_Ore), "Ore"},
-            {(Sandbox.Common.ObjectBuilders.MyObjectBuilderType)typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_Component), "Component"},
-            {(Sandbox.Common.ObjectBuilders.MyObjectBuilderType)typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_PhysicalGunObject), "PhysicalGunObject"},
-            {(Sandbox.Common.ObjectBuilders.MyObjectBuilderType)typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_AmmoMagazine), "AmmoMagazine"}
+        private Dictionary<string, VRage.ObjectBuilders.MyObjectBuilderType> nameTypes = new Dictionary<string, VRage.ObjectBuilders.MyObjectBuilderType>() { 
+            {"Ingot", ItemTypes.INGOT}, 
+            {"Ore", ItemTypes.ORE}, 
+            {"Component", ItemTypes.COMPONENT}, 
+            {"PhysicalObject", ItemTypes.PHYSICAL_OBJECT}, 
+            {"AmmoMagazine", ItemTypes.AMMO } 
         };
 
         public struct MyDefinitionId : IEquatable<MyDefinitionId>
@@ -31,24 +50,18 @@ namespace TestScript
             public static readonly MyDefinitionId.DefinitionIdComparerType Comparer =
                 new MyDefinitionId.DefinitionIdComparerType();
 
-            public readonly Sandbox.Common.ObjectBuilders.MyObjectBuilderType TypeId;
+            public readonly VRage.ObjectBuilders.MyObjectBuilderType TypeId;
             public readonly string SubtypeName;
+
+            public MyDefinitionId(VRage.ObjectBuilders.MyObjectBuilderType typeId, string subtypeName)
+            {
+                TypeId = typeId;
+                SubtypeName = subtypeName;
+            }
 
             public string SubtypeId
             {
                 get { return SubtypeName; }
-            }
-
-            public MyDefinitionId(Sandbox.Common.ObjectBuilders.MyObjectBuilderType type)
-            {
-                TypeId = type;
-                SubtypeName = (string)null;
-            }
-
-            public MyDefinitionId(Sandbox.Common.ObjectBuilders.MyObjectBuilderType type, string subtypeName)
-            {
-                TypeId = type;
-                SubtypeName = subtypeName;
             }
 
             public static bool operator ==(MyDefinitionId l, MyDefinitionId r)
@@ -110,15 +123,23 @@ namespace TestScript
             }
         }
 
-        void Main()
+        void Main(string argument)
         {
             // initialize
             Dictionary<MyDefinitionId, VRage.MyFixedPoint> inventory = new Dictionary<MyDefinitionId, VRage.MyFixedPoint>();
 
             var blocks = new List<IMyTerminalBlock>();
             GridTerminalSystem.GetBlocksOfType<IMyInventoryOwner>(blocks);
-            string typeName = typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_Ingot).ToString();
-            debug.Append(typeName).AppendLine();
+            VRage.ObjectBuilders.MyObjectBuilderType type = null;
+            if (!nameTypes.TryGetValue(argument, out type))
+            {
+                for (int i = 0; i < nameTypes.Count; i++)
+                {
+                }
+                return;
+            }
+            debug.Append(argument).Append('=').AppendLine(type.ToString() ?? "null");
+            
 
             if (blocks.Count == 0)
                 throw new Exception("Did not find any cargo container.");
@@ -126,14 +147,14 @@ namespace TestScript
             for (int i = 0; i < blocks.Count; ++i)
             {
 
-                var invOwner = blocks[i] as IMyInventoryOwner;
+                IMyInventoryOwner invOwner = blocks[i] as IMyInventoryOwner;
                 for (int j = 0; j < invOwner.InventoryCount; ++j)
                 {
-                    var inv = invOwner.GetInventory(j);
-                    var items = inv.GetItems();
+                    IMyInventory inv = invOwner.GetInventory(j);
+                    List<IMyInventoryItem> items = inv.GetItems();
                     for (int k = 0; k < items.Count; ++k)
                     {
-                        var item = items[k];
+                        IMyInventoryItem item = items[k];
                         var key = new MyDefinitionId(item.Content.TypeId, item.Content.SubtypeName);
                         //contents.Add(key);
                         if (!inventory.ContainsKey(key))
@@ -143,26 +164,18 @@ namespace TestScript
                     }
                 }
             }
-
+            debug.AppendLine();
             var enumerator = inventory.Keys.GetEnumerator();
             while (enumerator.MoveNext())
             {
                 var key = enumerator.Current;
-                if (key.TypeId != typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_Ingot))
+                if (key.TypeId != ItemTypes.INGOT)
                     continue;
                 debug.Append(typeNames[key.TypeId]).Append(key.SubtypeName).Append(" = ").Append(inventory[key]).AppendLine();
             }
 
-            Debug(debug.ToString());
+            Echo(debug.ToString());
             debug.Clear();
-        }
-
-        void Debug(String message)
-        {
-            var list = new List<IMyTerminalBlock>();
-            GridTerminalSystem.SearchBlocksOfName(debugName, list);
-            if (list.Count > 0)
-                list[0].SetCustomName(debugName + ":\n\r" + message);
         }
 
     }

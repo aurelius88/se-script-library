@@ -7,7 +7,6 @@ using Sandbox.Common;
 using Sandbox.Common.Components;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Common.Input;
-using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.Game.World;
 using Sandbox.Game.Weapons;

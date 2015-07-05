@@ -1,6 +1,5 @@
 ﻿using Sandbox.Definitions;
 using Sandbox.Engine;
-using Sandbox.Game;
 using Sandbox.ModAPI.Ingame;
 using Sandbox.ModAPI.Interfaces;
 using System;
@@ -57,7 +56,7 @@ namespace TestScript
             sb.Append(antennaName).Append(" - ");
             sb.Append((long)(totalVolume * K)).Append(" / ").Append((long)(totalMaxVolume * K));
             sb.Append(" (").Append(VRageMath.MathHelper.RoundOn2(100 * (float)(totalVolume * K) / (float)(totalMaxVolume * K))).Append("%)");
-            antenna.SetCustomName(sb.ToString());
+            //antenna.SetCustomName(sb.ToString());
 
             if (totalVolume == totalMaxVolume)
             {
@@ -70,7 +69,7 @@ namespace TestScript
             }
 
 
-            Debug(debug.ToString());
+            Echo(sb.ToString());
             debug.Clear();
         }
 

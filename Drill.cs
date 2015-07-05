@@ -1,6 +1,5 @@
 ﻿using Sandbox.Definitions;
 using Sandbox.Engine;
-using Sandbox.Game;
 using Sandbox.ModAPI.Ingame;
 using Sandbox.ModAPI.Interfaces;
 using System;
@@ -26,7 +25,7 @@ namespace TestScript
         List<IMyShipConnector> ejectors;
         List<IMyShipDrill> drills;
 
-        Sandbox.Common.ObjectBuilders.MyObjectBuilderType ORE = typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_Ore);
+        VRage.ObjectBuilders.MyObjectBuilderType ORE = typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_Ore);
 
         void Main()
         {

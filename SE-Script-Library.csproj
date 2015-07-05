@@ -55,8 +55,11 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Core" />
-    <Reference Include="VRage.Common">
-      <HintPath>lib\VRage.Common.dll</HintPath>
+    <Reference Include="VRage">
+      <HintPath>lib\VRage.dll</HintPath>
+    </Reference>
+    <Reference Include="VRage.Game">
+      <HintPath>lib\VRage.Game.dll</HintPath>
     </Reference>
     <Reference Include="VRage.Library">
       <HintPath>lib\VRage.Library.dll</HintPath>
@@ -68,6 +71,9 @@
   <ItemGroup>
     <Compile Include="Constructions\Drill.cs" />
     <Compile Include="Drill.cs" />
+    <Compile Include="AirLock.cs" />
+    <Compile Include="ActionEcho.cs" />
+    <Compile Include="Logger.cs" />
     <Compile Include="Scripts\AutoDrill.cs" />
     <Compile Include="AutoPilot.cs" />
     <Compile Include="Scripts\VisitorTracker.cs" />
@@ -77,6 +83,10 @@
     <Compile Include="TestScripts\EventTest.cs" />
     <Compile Include="TestScripts\GridTest.cs" />
     <Compile Include="TestScripts\GyroTest.cs" />
+    <Compile Include="Looper.cs" />
+    <Compile Include="TestScripts\LoopTest2.cs" />
+    <Compile Include="TestScripts\LoopTest.cs" />
+    <Compile Include="TestScripts\StargateTest.cs" />
     <Compile Include="TestScripts\ThrusterTest.cs" />
     <Compile Include="TestScripts\Utils\GyroActionTest.cs" />
     <Compile Include="TestScripts\Reference\GyroscopesTest.cs" />
